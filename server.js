@@ -192,13 +192,13 @@ function computeMVP(){const pick=(role,fn,label)=>{let best=null,bv=-1;for(const
 
 /* ===== 노트북 서버 ===== */
 const http=require('http'),fs=require('fs'),path=require('path'),crypto=require('crypto'),os=require('os');
-const PORT=+(process.env.PORT||process.argv[2]||3000),ADMIN_PIN=process.env.PIN||'';
+const PORT=+(process.env.PORT||process.argv[2]||3000),ADMIN_PIN=process.env.PIN||'2580';
 const HTML=fs.readFileSync(path.join(__dirname,'public','index.html'));
 const clients=new Set(),players=new Map();
 let nextCid=1,state='lobby',matchTime=300,lastEnd=null,tick=0;
 function urls(){if(process.env.RENDER_EXTERNAL_URL)return[process.env.RENDER_EXTERNAL_URL.replace(/\/$/,'')];if(process.env.PUBLIC_URL)return[process.env.PUBLIC_URL.replace(/\/$/,'')];const out=[];for(const a of Object.values(os.networkInterfaces()))for(const i of a||[])if(i.family==='IPv4'&&!i.internal)out.push(`http://${i.address}:${PORT}`);return out.length?out:[`http://localhost:${PORT}`]}
 const srv=http.createServer((req,res)=>{const u=req.url.split('?')[0];if(u==='/healthz'){res.writeHead(200,{'Content-Type':'text/plain'});res.end('ok');return}
- if(u==='/'||u==='/tv'||u==='/teacher'||u==='/index.html'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.end(HTML)}else{res.writeHead(404);res.end('not found')}});
+ if(u==='/'||u==='/tv'||u==='/host'||u==='/index.html'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.end(HTML)}else{res.writeHead(404);res.end('not found')}});
 srv.on('upgrade',(req,sock)=>{const key=req.headers['sec-websocket-key'];if(!key){sock.destroy();return}
  const acc=crypto.createHash('sha1').update(key+'258EAFA5-E914-47DA-95CA-C5AB0DC85B11').digest('base64');
  sock.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: '+acc+'\r\n\r\n');
@@ -276,6 +276,5 @@ setInterval(()=>{if(state!=='playing'||!G)return;update(1/30);tick++;
 srv.listen(PORT,'0.0.0.0',()=>{const U=urls();
  console.log('\n  테크킹 운동회 새총 대전 서버가 켜졌어요!\n');
  console.log('  학생 태블릿 접속 주소:');U.forEach(u=>console.log('     '+u));
- console.log('\n  TV(큰 화면):   '+U[0]+'/tv');console.log('  선생님 조작판: '+U[0]+'/teacher'+(ADMIN_PIN?'  (비밀번호 사용 중)':''));
- if(process.env.RENDER&&!ADMIN_PIN)console.log('\n  [주의] 인터넷에 공개된 서버예요. Render 환경 변수에 PIN 을 꼭 설정하세요.');
+ console.log('\n  TV(큰 화면):   '+U[0]+'/tv');console.log('  관리자 페이지: '+U[0]+'/host  (비밀번호 사용 중)');
  console.log('\n  끄려면 이 창에서 Ctrl+C 를 누르세요.\n')});

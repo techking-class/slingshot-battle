@@ -136,6 +136,8 @@ input.name{width:100%;box-sizing:border-box;font:inherit;font-size:20px;padding:
     <button id="tStop" type="button">경기 끝내기</button>
     <button id="tLobby" type="button">대기실로</button>
     <button id="tShuffle" type="button">팀 섞기</button>
+    <button id="tTv" type="button">📺 TV 화면 열기</button>
+    <button id="tFull" type="button">⛶ 크게 보기</button>
   </div>
   <label>경기 시간 <select id="tTime"><option value="180">3분</option><option value="300" selected>5분</option><option value="420">7분</option></select></label>
   <div style="margin-top:10px">학생 접속 주소</div>
@@ -143,6 +145,7 @@ input.name{width:100%;box-sizing:border-box;font:inherit;font-size:20px;padding:
   <div style="margin-top:10px">참가자 <span id="tCount">0</span>명 (빈자리는 봇이 채워요)</div>
   <div id="tList"></div>
 </div>
+<button id="tShow" type="button" hidden style="position:absolute;left:10px;bottom:10px;font:inherit;font-size:15px;border:3px solid #1b1b1b;box-shadow:0 3px 0 #1b1b1b;border-radius:12px;padding:8px 14px;background:#FFC93C;color:#3a2600;cursor:pointer">⚙️ 조작판 열기</button>
 <div id="conn" hidden style="position:absolute;left:50%;bottom:20px;transform:translateX(-50%);background:#E24B4A;color:#fff;padding:8px 14px;border-radius:10px;font-size:14px"></div>
 
 <div class="overlay" id="result" hidden>
@@ -576,7 +579,7 @@ function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','
 function showPlayUI(play,spect){$('hud').hidden=false;['me','mini','skills','hint'].forEach(id=>$(id).hidden=!play);document.body.classList.toggle('tv',!!spect)}
 
 /* ===== 서버 접속 모드 (학생 / TV / 선생님) ===== */
-const MODE=location.pathname.startsWith('/tv')?'tv':location.pathname.startsWith('/teacher')?'teacher':'student';
+const MODE=location.pathname.startsWith('/tv')?'tv':location.pathname.startsWith('/host')?'teacher':'student';
 let ws=null,myCid=-1,myRole='atk',LB=null,snapT=0,last=0,sendT=0,lastSent='',PIN='',joined=false;
 const SNAPMS=1000/15;
 let token='';try{token=sessionStorage.getItem('sb_token')||'';if(!token){token=Math.random().toString(36).slice(2)+Date.now().toString(36);sessionStorage.setItem('sb_token',token)}}catch(_){token=Math.random().toString(36).slice(2)}
@@ -648,6 +651,9 @@ if(MODE==='student'){$('join').hidden=false;try{$('nameIn').value=sessionStorage
  roleButtons($('jroles'),myRole,()=>1,k=>{myRole=k;renderLobby()})}
 else{$('lobby').hidden=MODE==='teacher';document.body.addEventListener('pointerdown',()=>audioInit(),{once:true})}
 if(MODE==='teacher'){$('teacher').hidden=false;
+ $('tTv').onclick=()=>window.open('/tv','_blank');
+ $('tFull').onclick=()=>{$('teacher').hidden=true;$('tShow').hidden=false;document.body.classList.add('tv');try{document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}catch(_){}};
+ $('tShow').onclick=()=>{$('teacher').hidden=false;$('tShow').hidden=true;try{document.fullscreenElement&&document.exitFullscreen()}catch(_){}};
  $('tStart').onclick=()=>admin('start',{time:+$('tTime').value});$('tPause').onclick=()=>admin(G&&G.paused?'resume':'pause');$('tStop').onclick=()=>{if(confirm('경기를 지금 끝낼까요?'))admin('stop')};
  $('tLobby').onclick=()=>admin('lobby');$('tShuffle').onclick=()=>admin('shuffle');$('tTime').onchange=()=>admin('time',{time:+$('tTime').value});
  $('tList').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.team)admin('team',{cid:+b.dataset.team});if(b.dataset.kick&&confirm('이 학생을 내보낼까요?'))admin('kick',{cid:+b.dataset.kick})}}
