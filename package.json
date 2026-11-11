@@ -1,0 +1,9 @@
+{
+  "name": "slingshot-battle",
+  "version": "1.0.0",
+  "private": true,
+  "description": "테크킹 운동회 새총 대전 서버",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}
